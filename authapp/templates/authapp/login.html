@@ -1,0 +1,14 @@
+{% extends 'base.html' %} 
+{% load crispy_forms_tags %}
+{% block content %}
+<main class="form-signin w-50 m-auto">
+  <form method="POST">
+    {% csrf_token %}
+    <h1 class="h3 mb-3 fw-normal">Вход</h1>
+    {{ form|crispy }}
+
+    <button class="w-100 btn btn-lg btn-primary" type="submit">Войти</button>
+    <a class="w-100 btn btn-lg btn-primary" href="{% url 'authapp:register' %}">Регистрация</a>
+  </form>
+</main>
+{% endblock content %}

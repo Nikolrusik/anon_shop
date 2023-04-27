@@ -1,0 +1,48 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Eighth navbar example">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'mainapp:main' %}">Kokoc Group Test Task</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" aria-expanded="false"
+            aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" style="justify-content: space-between">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.view_name == 'mainapp:main' %} active {% endif %}" aria-current="page" href="{% url 'mainapp:main' %}">Все опросы</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.view_name == 'mainapp:all_results' %} active {% endif %}" href="{% url 'mainapp:all_results' %}">Пройденные опросы</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.view_name == 'shop:items' %} active {% endif %}" href="{% url 'shopapp:items' %}">Магазин</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.view_name == 'shop:user_items' %} active {% endif %}" href="{% url 'shopapp:user_items' %}">Мои раскраски</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.view_name == 'authapp:users' %} active {% endif %}" href="{% url 'authapp:users' %}">Пользователи</a>
+                </li>
+
+            </ul>
+            <div>
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if request.user.is_authenticated %}
+                    <li class="nav-item" style="border: 2px solid {{ request.user.border_color }};">
+                           <a href="{% url 'authapp:profile' pk=request.user.id %}" class="nav-link" href="">Переход в профиль: {{ request.user }}</a>
+                           <a href="{% url 'authapp:profile' pk=request.user.id %}" class="nav-link" href="">Текущий баланс: {{ request.user.balance }}</a>
+
+                    </li>
+                    {% endif %}
+                    <li class="nav-item btn btn-danger" style="display: flex; align-items: center;">
+                        {% if request.user.is_authenticated %}
+                        <a class="nav-link active" href="{% url 'authapp:logout' %}">Выйти</a>
+                        {% else %}
+                        <a class="nav-link active" href="{% url 'authapp:login' %}">Войти</a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
