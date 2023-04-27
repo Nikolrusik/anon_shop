@@ -144,3 +144,9 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.file'
+SESSION_FILE_PATH = './var/tmp/django_sessions'
+SESSION_COOKIE_AGE = 86400  # время жизни сессии в секундах
+SESSION_COOKIE_SECURE = True  # использовать только защищенные куки (HTTPS)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # сессия истекает при закрытии браузера

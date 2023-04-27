@@ -7,7 +7,6 @@ app_name = MainappConfig.name
 
 urlpatterns = [
     path("", views.ProductView.as_view(), name="main"),
-    # path("register/", views.RegiserView.as_view(), name="register"),
-    # path("login/", views.CustomLoginView.as_view(), name="login"),
-    # path("logout/", LogoutView.as_view(), name="logout"),
+    path("cart/", views.CartView.as_view(), name="cart"),
+    path("orders/", views.OrdersView.as_view(), name="orders"),
 ]

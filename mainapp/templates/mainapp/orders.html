@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+ <div class="orders">
+    {% for order in orders %}
+        <p>
+            {{ order.id }}
+        </p>
+        <p>address: {{ order.profile.address }}</p>
+        <p>Total: {{ order.total_price }}</p>
+        <p>Products: {{ order.products.all }}</p>
+    {% endfor %}
+ </div>
+{% endblock content %}

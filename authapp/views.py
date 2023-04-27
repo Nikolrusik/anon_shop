@@ -13,6 +13,15 @@ class RegiserView(CreateView):
     form_class: Any = forms.RegisterForm
     success_url: str = reverse_lazy("mainapp:main")
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        session_id = self.request.session.session_key
+        profile, created = models.Profile.objects.get_or_create(
+            session_id=session_id)
+        profile.user = form.instance
+        profile.save()
+        return response
+
 
 class CustomLoginView(LoginView):
     template_name: str = "authapp/login.html"

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="cart_items">
+    {% for item in cart.product.all %}
+    <div class="cart_item">
+        <p>{{ item.name }}</p>
+        <p>{{ item.price }}</p>
+    </div>
+    {% endfor %}
+    <h2>Price total: {{ total }}</h2>
+    
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="operation" value="order" hidden readonly>
+    <input type="text" name="first_name" id="" placeholder="first_name" required>
+    <input type="text" name="last_name" id="" placeholder="last_name"required>
+    <input type="text" name="address" id="" placeholder="address" required>
+    <input type="number" name="phone" id="" placeholder="phone number" required>
+    <input type="submit" value="Заказать">
+</form>
+{% endblock content %}

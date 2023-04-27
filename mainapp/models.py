@@ -1,4 +1,4 @@
-from typing import Union, Type
+from typing import Union, Type, Dict
 from django.db import models
 from authapp.models import AbstractUserModel, Profile
 
@@ -19,22 +19,26 @@ class Product(models.Model):
 
 class Cart(models.Model):
     profile: Union[Type[Profile], str] = models.ForeignKey(
-        AbstractUserModel,
+        Profile,
         on_delete=models.SET_NULL,
         null=True,
-        verbose_name="Profile"
+        verbose_name="Profile",
+        db_index=True
     )
-    products: Union[Type[Product], str] = models.ManyToManyField(
+    product: Union[Type[Product], str] = models.ManyToManyField(
         Product,
         verbose_name="Product"
     )
 
     def add_product(self, product):
-        self.products.add(product)
+        self.product.add(product)
         self.save()
 
     def get_total_price(self):
-        return sum([product.price for product in self.products.all()])
+        return sum([item.price for item in self.product.all()])
+
+    def clear(self):
+        self.product.clear()
 
     class Meta:
         verbose_name = "Cart"
@@ -46,17 +50,18 @@ class Order(models.Model):
         Profile,
         on_delete=models.SET_NULL,
         null=True,
-        verbose_name="Profile"
+        verbose_name="Profile",
+        db_index=True
     )
-    date_ordered = models.DateTimeField(
+    date_ordered: str = models.DateTimeField(
         auto_now_add=True,
         verbose_name="Order date"
     )
-    products = models.ManyToManyField(
+    products: Dict[Type[Product], str] = models.ManyToManyField(
         Product,
         verbose_name="Products"
     )
-    total_price = models.DecimalField(
+    total_price: float = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         verbose_name="Total price"

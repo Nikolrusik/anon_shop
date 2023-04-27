@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+Hello, world
+{{ request.session.session_key }}
+{{ request.user.username }}
+<div class="products">
+    {% for product in products %}
+        <div class="product">
+            <p>{{ product.name }}</p>
+            <p>{{ product.description }}</p>
+            <p>{{ product.price }}</p>
+            <form method="POST"">
+                {% csrf_token %}
+                
+                <input type="text" name="product_id" value="{{ product.id }}" hidden>
+                <input type="number" name="amount" value="1">
+                <input type="submit" value="Добавить в корзину">
+            </form>
+        </div>
+    {% endfor %}
+</div>
+{% endblock content %}

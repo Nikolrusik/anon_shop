@@ -37,19 +37,27 @@ class AbstractUserModel(AbstractBaseUser, PermissionsMixin):
 class Profile(models.Model):
     first_name: str = models.CharField(
         max_length=255,
-        verbose_name="First name"
+        verbose_name="First name",
+        blank=True,
+        null=True
     )
     last_name: str = models.CharField(
         max_length=255,
-        verbose_name="Last name"
+        verbose_name="Last name",
+        blank=True,
+        null=True
     )
     address: str = models.CharField(
         max_length=500,
-        verbose_name="Address"
+        verbose_name="Address",
+        blank=True,
+        null=True
     )
     phone: str = models.CharField(
         max_length=25,
-        verbose_name="Phone number"
+        verbose_name="Phone number",
+        blank=True,
+        null=True
     )
 
     user: Union[Type[AbstractUserModel], str] = models.ForeignKey(
@@ -62,15 +70,16 @@ class Profile(models.Model):
         max_length=255,
         null=True,
         blank=True,
-        verbose_name="Session id"
+        verbose_name="Session id",
+        db_index=True
     )
 
     @classmethod
     def create_profile(cls,
-                       first_name: str,
-                       last_name: str,
-                       address: str,
-                       phone: str,
+                       first_name: Union[str, None] = None,
+                       last_name: Union[str, None] = None,
+                       address: Union[str, None] = None,
+                       phone: Union[str, None] = None,
                        user: Union[Type[AbstractUserModel], str, None] = None,
                        session_id: Union[str, None] = None,
                        ):
