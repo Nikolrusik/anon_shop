@@ -1,5 +1,6 @@
 from typing import Union, Type, Dict
 from django.db import models
+from django.shortcuts import get_object_or_404
 from authapp.models import AbstractUserModel, Profile
 
 
@@ -10,6 +11,7 @@ class Product(models.Model):
         blank=True,
         null=True
     )
+    # amount: int = models
     price: float = models.FloatField(verbose_name="Price")
 
     class Meta:
@@ -25,20 +27,26 @@ class Cart(models.Model):
         verbose_name="Profile",
         db_index=True
     )
-    product: Union[Type[Product], str] = models.ManyToManyField(
-        Product,
-        verbose_name="Product"
-    )
+    product: Union[Type[Product], str] = models.ForeignKey(
+        Product, on_delete=models.CASCADE, verbose_name="Product")
+    amount: int = models.PositiveIntegerField(default=1, verbose_name="Amount")
 
-    def add_product(self, product):
-        self.product.add(product)
-        self.save()
+    @classmethod
+    def add_product(cls, profile, product, amount):
+        new_product = cls(profile=profile, product=product, amount=amount)
+        new_product.save()
+        return new_product
 
-    def get_total_price(self):
-        return sum([item.price for item in self.product.all()])
+    @classmethod
+    def get_total_price(cls, profile):
+        items = cls.objects.filter(profile=profile)
+        return sum([int(item.amount) * int(item.product.price) for item in items])
 
-    def clear(self):
-        self.product.clear()
+    @classmethod
+    def clear(cls, profile):
+        items = cls.objects.filter(profile=profile)
+        for item in items:
+            item.delete()
 
     class Meta:
         verbose_name = "Cart"
@@ -57,16 +65,29 @@ class Order(models.Model):
         auto_now_add=True,
         verbose_name="Order date"
     )
-    products: Dict[Type[Product], str] = models.ManyToManyField(
-        Product,
-        verbose_name="Products"
-    )
     total_price: float = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         verbose_name="Total price"
     )
 
+
+class OrderItems(models.Model):
+    order: Union[Type[Order], str] = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        verbose_name="Order"
+    )
+    product: Union[Type[Product], str] = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name="Product"
+    )
+    amount: int = models.PositiveIntegerField(
+        default=1,
+        verbose_name="Amount"
+    )
+
     class Meta:
-        verbose_name = "Order"
-        verbose_name_plural = "Orders"
+        verbose_name = "Order item"
+        verbose_name_plural = "Order items"

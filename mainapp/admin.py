@@ -1,5 +1,5 @@
 from django.contrib import admin
-from mainapp.models import Product, Cart, Order
+from mainapp.models import Product, Cart, Order, OrderItems
 
 
 @admin.register(Product)
@@ -9,8 +9,14 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ["id", "profile", 'display_products']
+    list_display = ["id", "profile", 'product', 'amount']
 
-    def display_products(self, obj):
-        return ', '.join([product.name for product in obj.product.all()])
-    display_products.short_description = 'Products'
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ["id", "profile", 'date_ordered', 'total_price']
+
+
+@admin.register(OrderItems)
+class OrderItemsAdmin(admin.ModelAdmin):
+    list_display = ["order", 'product', 'amount']

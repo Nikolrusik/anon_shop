@@ -8,7 +8,7 @@
         </p>
         <p>address: {{ order.profile.address }}</p>
         <p>Total: {{ order.total_price }}</p>
-        <p>Products: {{ order.products.all }}</p>
+        <a href="{% url 'mainapp:order_list' pk=order.id %}">Смотреть список товаров</a>
     {% endfor %}
  </div>
 {% endblock content %}

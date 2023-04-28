@@ -4,7 +4,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpRequest
 
-from mainapp.models import Product, Cart, Order
+from mainapp.models import Product, Cart, Order, OrderItems
 from authapp.models import Profile
 
 
@@ -19,25 +19,29 @@ class ProductView(TemplateView):
         return context
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseRedirect:
-        session_id = request.session.session_key
-        profile_exists = Profile.objects.filter(Q(
+        session_id: str = request.session.session_key
+        profile_exists: bool = Profile.objects.filter(Q(
             session_id=session_id) | Q(user__username=request.user)).exists()
+        product = Product.objects.get(id=request.POST.get("product_id"))
+        amount = request.POST.get("amount")
         if request.user.is_authenticated:
             if not profile_exists:
-                profile = Profile.create_profile(user=request.user)
+                profile: Union[Type[Profile], str] = Profile.create_profile(
+                    user=request.user)
                 profile.save()
-                cart = Cart.objects.create(profile=profile)
-                cart.save()
         else:
             if not profile_exists:
-                profile = Profile.create_profile(session_id=session_id)
+                profile: Union[Type[Profile], str] = Profile.create_profile(
+                    session_id=session_id)
                 profile.save()
-                cart = Cart.objects.create(profile=profile)
-                cart.save()
-        profile = Profile.objects.filter(
+        profile: Union[Type[Profile], str] = Profile.objects.filter(
             Q(user__username=request.user) | Q(session_id=session_id)).first()
-        cart = Cart.objects.filter(profile=profile).first()
-        cart.add_product(product=request.POST.get('product_id'))
+        cart: Any = Cart.objects.create(
+            profile=profile,
+            product=product,
+            amount=amount
+        )
+        cart.save()
         return HttpResponseRedirect('/mainapp/')
 
 
@@ -46,29 +50,29 @@ class CartView(TemplateView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super(CartView, self).get_context_data(**kwargs)
-        profile = Profile.objects.filter(
+        profile: Union[Type[Profile], str] = Profile.objects.filter(
             Q(user__username=self.request.user) | Q(
                 session_id=self.request.session.session_key)
         ).first()
-        cart = Cart.objects.filter(
-            profile=profile).first()
+        cart: Union[Type[Cart], str] = Cart.objects.filter(
+            profile=profile)
         context['profile'] = profile
         context['cart'] = cart
-        context['total'] = cart.get_total_price()
+        context['total'] = Cart.get_total_price(profile)
         return context
 
     def post(self, request: HttpRequest, **kwargs: Dict[str, Any]) -> HttpResponseRedirect:
         if request.POST.get('operation') == "order":
-            profile = Profile.objects.filter(
+            profile: Union[Type[Profile], str] = Profile.objects.filter(
                 Q(user__username=self.request.user) | Q(
                     session_id=self.request.session.session_key)
             ).first()
-            cart = Cart.objects.filter(
-                profile=profile).first()
-            first_name = request.POST.get("first_name")
-            last_name = request.POST.get("last_name")
-            address = request.POST.get("address")
-            phone = request.POST.get("phone")
+            cart: Dict[Type[Cart], str] = Cart.objects.filter(
+                profile=profile)
+            first_name: str = request.POST.get("first_name")
+            last_name: str = request.POST.get("last_name")
+            address: str = request.POST.get("address")
+            phone: str = request.POST.get("phone")
             with transaction.atomic():
                 profile.first_name = first_name
                 profile.last_name = last_name
@@ -77,24 +81,43 @@ class CartView(TemplateView):
                 profile.save()
                 order = Order.objects.create(
                     profile=profile,
-                    total_price=cart.get_total_price()
+                    total_price=Cart.get_total_price(profile)
                 )
-                order.products.add(*cart.product.all())
-                cart.clear()
+                for item in cart:
+                    order_item = OrderItems.objects.create(
+                        order=order,
+                        product=item.product,
+                        amount=item.amount
+                    )
+                    order_item.save()
+                    item.delete()
 
         return HttpResponseRedirect('/mainapp/orders')
 
 
 class OrdersView(TemplateView):
-    template_name = "mainapp/orders.html"
+    template_name: str = "mainapp/orders.html"
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super(OrdersView, self).get_context_data(**kwargs)
-        profile = Profile.objects.filter(
+        profile: Union[Type[Profile], str] = Profile.objects.filter(
             Q(user__username=self.request.user) | Q(
                 session_id=self.request.session.session_key)
         ).first()
-        context['orders'] = Order.objects.filter(
+        orders: Dict[Type[Order], str] = Order.objects.filter(
             profile=profile
         )
+        context['profile'] = profile
+        context['orders'] = orders
+        return context
+
+
+class OrderListView(TemplateView):
+    template_name: str = "mainapp/order_list.html"
+
+    def get_context_data(self, pk: int = None, **kwargs: Any) -> Dict[str, Any]:
+        context = super(OrderListView, self).get_context_data(**kwargs)
+        context["order"] = Order.objects.get(id=pk)
+        context["products"] = OrderItems.objects.filter(
+            order__id=pk)
         return context

@@ -12,8 +12,7 @@ Hello, world
             <p>{{ product.price }}</p>
             <form method="POST"">
                 {% csrf_token %}
-                
-                <input type="text" name="product_id" value="{{ product.id }}" hidden>
+                <input type="text" name="product_id" value={{ product.id }} hidden>
                 <input type="number" name="amount" value="1">
                 <input type="submit" value="Добавить в корзину">
             </form>
